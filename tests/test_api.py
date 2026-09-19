@@ -57,6 +57,19 @@ def test_model_info(client: TestClient):
     assert body["classes"] == list(main.CLASS_NAMES)
 
 
+def test_cors_allows_local_frontend(client: TestClient):
+    response = client.options(
+        "/predict",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
 def test_predict_image(client: TestClient):
     response = client.post(
         "/predict?top_k=3",

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
 from schema import PredictionResponse, PredictionItem
 
@@ -21,6 +22,14 @@ from inference import (
 
 CHECKPOINT_PATH = Path(os.getenv("EUROSAT_CHECKPOINT", str(DEFAULT_CHECKPOINT)))
 DEVICE = os.getenv("EUROSAT_DEVICE", "cpu")
+FRONTEND_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_PIXELS = 25_000_000
 SUPPORTED_MEDIA_TYPES = {
@@ -47,6 +56,13 @@ app = FastAPI(
     description="Classify satellite image patches into one of ten EuroSAT classes.",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=FRONTEND_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
 
 
