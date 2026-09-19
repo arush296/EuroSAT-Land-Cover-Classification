@@ -14,6 +14,26 @@ const rankings = document.querySelector("#top-predictions");
 const backendStatus = document.querySelector("#backend-status");
 
 let previewUrl;
+let backendRetryTimer;
+
+function setBackendConnected() {
+  if (backendRetryTimer) clearTimeout(backendRetryTimer);
+  backendRetryTimer = undefined;
+  backendStatus.textContent = "Backend connected";
+  backendStatus.classList.add("connected");
+}
+
+function setBackendUnavailable() {
+  backendStatus.textContent = "Backend unavailable — retrying…";
+  backendStatus.classList.remove("connected");
+
+  if (!backendRetryTimer) {
+    backendRetryTimer = setTimeout(() => {
+      backendRetryTimer = undefined;
+      checkBackend();
+    }, 5000);
+  }
+}
 
 function percentage(score) {
   return `${(score * 100).toFixed(1)}%`;
@@ -53,12 +73,15 @@ form.addEventListener("submit", async (event) => {
 
   const formData = new FormData();
   formData.append("file", file);
+  let backendReached = false;
 
   try {
     const response = await fetch(`${API_URL}/predict?top_k=3`, {
       method: "POST",
       body: formData,
     });
+    backendReached = true;
+    setBackendConnected();
     const body = await response.json();
 
     if (!response.ok) {
@@ -85,6 +108,7 @@ form.addEventListener("submit", async (event) => {
     results.hidden = false;
   } catch (error) {
     status.textContent = error.message || "Could not reach the prediction API.";
+    if (!backendReached) setBackendUnavailable();
   } finally {
     button.disabled = false;
     button.textContent = "Classify image";
@@ -96,11 +120,9 @@ async function checkBackend() {
     const response = await fetch(`${API_URL}/health`);
     if (!response.ok) throw new Error();
 
-    backendStatus.textContent = "Backend connected";
-    backendStatus.classList.add("connected");
+    setBackendConnected();
   } catch {
-    backendStatus.textContent = "Backend unavailable";
-    backendStatus.classList.remove("connected");
+    setBackendUnavailable();
   }
 }
 
