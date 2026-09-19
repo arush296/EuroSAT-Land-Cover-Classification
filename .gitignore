@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments and local secrets
+.venv/
+venv/
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Downloaded datasets
+data/
+
+# Model checkpoints and exported models
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# Generated experiment output
+*_output.txt
+runs/
+wandb/
+
+# Scratch notebook
+rough.ipynb
