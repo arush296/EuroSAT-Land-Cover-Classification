@@ -1,13 +1,11 @@
-# Model and image processing
+# Runtime dependencies shared with the deployed API
+-r requirements-api.txt
+
+# Training and ONNX export
 torch==2.14.0
 torchvision==0.29.0
-pillow==12.3.0
-numpy==2.5.3
-
-# API
-fastapi==0.141.1
-uvicorn[standard]==0.53.0
-python-multipart==0.0.32
+onnx==1.23.0
+onnxscript==0.7.2
 
 # Evaluation and notebooks
 matplotlib==3.11.1

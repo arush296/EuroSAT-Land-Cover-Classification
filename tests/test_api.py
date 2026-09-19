@@ -1,21 +1,28 @@
 from io import BytesIO
 
 import pytest
-import torch
+import numpy as np
 from fastapi.testclient import TestClient
 from PIL import Image
-from torch import nn
 
 import main
 
 
-class FakeModel(nn.Module):
-    """Small deterministic stand-in for the trained ResNet18."""
+class FakeInput:
+    name = "images"
 
-    def forward(self, images: torch.Tensor) -> torch.Tensor:
-        logits = torch.zeros(images.shape[0], len(main.CLASS_NAMES))
+
+class FakeModel:
+    """Small deterministic ONNX-session stand-in for the trained ResNet18."""
+
+    def get_inputs(self):
+        return [FakeInput()]
+
+    def run(self, output_names, inputs):
+        images = inputs["images"]
+        logits = np.zeros((images.shape[0], len(main.CLASS_NAMES)), dtype=np.float32)
         logits[:, 1] = 10  # Always predict Forest.
-        return logits
+        return [logits]
 
 
 @pytest.fixture

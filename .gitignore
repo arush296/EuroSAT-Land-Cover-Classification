@@ -8,6 +8,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+:memory:.ses
 
 # Virtual environments and local secrets
 .venv/
