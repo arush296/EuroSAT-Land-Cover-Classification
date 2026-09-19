@@ -1,0 +1,16 @@
+# Model and image processing
+torch==2.14.0
+torchvision==0.29.0
+pillow==12.3.0
+numpy==2.5.3
+
+# API
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+python-multipart==0.0.32
+
+# Evaluation and notebooks
+matplotlib==3.11.1
+scikit-learn==1.9.1
+jupyterlab==4.6.3
+ipykernel==7.3.0
