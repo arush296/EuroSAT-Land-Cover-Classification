@@ -21,6 +21,7 @@
       </header>
 
       <section class="card">
+        <div class="input-panel">
         <form id="prediction-form">
           <label class="upload" for="image-input">
             <span>Choose a satellite image</span>
@@ -60,7 +61,9 @@
         </form>
 
         <p id="status" class="status" role="status" aria-live="polite"></p>
+        </div>
 
+        <aside class="prediction-panel" aria-label="Model prediction">
         <section id="results" class="results" aria-live="polite" hidden>
           <p class="result-label">Prediction</p>
           <div class="primary-result">
@@ -69,12 +72,24 @@
           </div>
           <div id="top-predictions" class="rankings"></div>
         </section>
+          <div class="result-placeholder">
+            <p class="result-label">Prediction</p>
+            <p>
+              Select an image and click <strong>Classify image</strong> to see
+              the model's prediction here.
+            </p>
+          </div>
+        </aside>
       </section>
 
       <p id="backend-status" class="backend-status">Checking backend…</p>
       <p class="attribution">
         Sample images from the
-        <a href="https://github.com/phelber/EuroSAT">EuroSAT dataset</a>.
+        <a href="https://github.com/phelber/EuroSAT">EuroSAT dataset</a>
+        ·
+        <a href="https://github.com/arush296/EuroSAT-Land-Cover-Classification">
+          View project on GitHub
+        </a>
       </p>
     </main>
 
