@@ -198,14 +198,14 @@ form.addEventListener("submit", async (event) => {
       throw new Error(body.detail || "Prediction failed.");
     }
 
-    predictedClass.textContent = body.predicted_class;
+    predictedClass.textContent = formatClassName(body.predicted_class);
     predictedScore.textContent = percentage(body.score);
 
     for (const prediction of body.top_predictions) {
       const row = document.createElement("div");
       row.className = "ranking-row";
       row.innerHTML = `
-        <span>${prediction.class_name}</span>
+        <span>${formatClassName(prediction.class_name)}</span>
         <strong>${percentage(prediction.score)}</strong>
         <div class="ranking-bar" aria-hidden="true">
           <span style="width: ${prediction.score * 100}%"></span>
