@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import torch
 from torch import nn
 from torchvision import models
 
-from inference import CLASS_NAMES, INPUT_SIZE
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_DIR))
+
+from inference import CLASS_NAMES, INPUT_SIZE  # noqa: E402
 
 
-PROJECT_DIR = Path(__file__).resolve().parent
 DEFAULT_SOURCE = PROJECT_DIR / "resnet_fully_fine_tuned.pth"
 DEFAULT_OUTPUT = PROJECT_DIR / "resnet18_eurosat.onnx"
 

@@ -1,5 +1,5 @@
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
+from pydantic import BaseModel
+
 
 class PredictionItem(BaseModel):
     class_name: str

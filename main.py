@@ -9,7 +9,7 @@ from typing import Annotated
 from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
-from schema import PredictionResponse, PredictionItem
+from schema import PredictionResponse
 
 from inference import (
     CLASS_NAMES,
@@ -60,6 +60,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
+    # Render sets this to the Vercel origin; local frontend origins are defaults.
     allow_origins=FRONTEND_ORIGINS,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],

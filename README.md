@@ -37,10 +37,12 @@ Training images receive random horizontal flips, vertical flips, and rotations. 
 
 ```text
 .
-├── EuroSAT.ipynb              # Custom CNN training and evaluation
-├── resnet18.ipynb             # ResNet18 fine-tuning and evaluation
-├── data_preprocessing.ipynb   # Shared transforms, fixed splits and dataloaders
-├── export_onnx.py             # Exports the trained PyTorch model to ONNX
+├── notebooks/
+│   ├── custom_cnn.ipynb       # Custom CNN training and evaluation
+│   ├── resnet18.ipynb         # ResNet18 fine-tuning and evaluation
+│   └── data_preprocessing.ipynb
+├── scripts/
+│   └── export_onnx.py         # Exports the trained PyTorch model to ONNX
 ├── inference.py               # Lightweight ONNX preprocessing and inference
 ├── main.py                    # FastAPI application
 ├── schema.py                  # API response models
@@ -78,7 +80,13 @@ Download EuroSAT into the expected local directory:
 python -c "from torchvision.datasets import EuroSAT; EuroSAT(root='data', download=True)"
 ```
 
-The two model notebooks call `data_preprocessing.ipynb` themselves, so they can be run independently after the dataset has been downloaded.
+Launch Jupyter from the repository root so notebook paths resolve consistently:
+
+```bash
+jupyter lab
+```
+
+The two model notebooks call `notebooks/data_preprocessing.ipynb` themselves, so they can be run independently after the dataset has been downloaded.
 
 ## Run the API locally
 
@@ -159,7 +167,7 @@ The tests use a deterministic fake inference session, so the API contract and va
 After retraining and saving `resnet_fully_fine_tuned.pth`, run:
 
 ```bash
-python export_onnx.py
+python scripts/export_onnx.py
 ```
 
 This creates `resnet18_eurosat.onnx`. Both formats are ignored by Git; publish deployment models as release assets instead of committing them to the repository.
