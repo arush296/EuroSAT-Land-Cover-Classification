@@ -75,6 +75,7 @@ h1 {
 }
 
 .prediction-panel {
+  align-self: start;
   min-width: 0;
   padding: 20px;
   border-radius: 14px;
@@ -279,7 +280,7 @@ button:disabled {
 
 .model-results-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
