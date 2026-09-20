@@ -42,11 +42,12 @@ Training images receive random horizontal flips, vertical flips, and rotations. 
 │   ├── resnet18.ipynb         # ResNet18 fine-tuning and evaluation
 │   └── data_preprocessing.ipynb
 ├── scripts/
-│   └── export_onnx.py         # Exports the trained PyTorch model to ONNX
+│   ├── export_onnx.py         # Exports the trained PyTorch model to ONNX
+│   └── prepare_demo_images.py # Builds the held-out frontend sample pool
 ├── inference.py               # Lightweight ONNX preprocessing and inference
 ├── main.py                    # FastAPI application
 ├── schema.py                  # API response models
-├── frontend/                  # Static HTML, CSS and JavaScript frontend
+├── frontend/                  # Static frontend and bundled test examples
 ├── tests/test_api.py          # Automated API tests
 ├── requirements.txt           # Training, notebooks and local development
 ├── requirements-api.txt       # Lightweight production API dependencies
@@ -152,6 +153,16 @@ python -m http.server 3000 --directory frontend
 ```
 
 Open <http://127.0.0.1:3000>. The frontend previews the chosen image, calls the FastAPI backend, and displays the top three class probabilities. It also retries the health check while a sleeping Render service wakes up.
+
+Visitors without their own satellite image can select from ten examples shown on the page. The examples are randomly chosen on each page load—one per class—from a bundled pool of 50 held-out test images. The **Shuffle** button produces another class-balanced set.
+
+To rebuild that pool from the saved test split:
+
+```bash
+python scripts/prepare_demo_images.py
+```
+
+The included sample images come from the MIT-licensed EuroSAT dataset. Attribution and the dataset license are provided in `frontend/examples/`.
 
 ## Run the tests
 

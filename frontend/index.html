@@ -28,6 +28,23 @@
           </label>
           <input id="image-input" name="file" type="file" accept="image/*" />
 
+          <section class="examples" aria-labelledby="examples-title">
+            <div class="examples-header">
+              <div>
+                <p id="examples-title" class="examples-title">
+                  Or try a sample
+                </p>
+                <p>One held-out test image from every class.</p>
+              </div>
+              <button id="shuffle-examples" type="button" disabled>
+                Shuffle
+              </button>
+            </div>
+            <div id="example-grid" class="example-grid" aria-live="polite">
+              <p class="examples-loading">Loading examples…</p>
+            </div>
+          </section>
+
           <div id="preview-wrapper" class="preview" hidden>
             <img id="image-preview" alt="Selected satellite image preview" />
             <p id="file-name"></p>
@@ -51,6 +68,10 @@
       </section>
 
       <p id="backend-status" class="backend-status">Checking backend…</p>
+      <p class="attribution">
+        Sample images from the
+        <a href="https://github.com/phelber/EuroSAT">EuroSAT dataset</a>.
+      </p>
     </main>
 
     <script src="config.js"></script>

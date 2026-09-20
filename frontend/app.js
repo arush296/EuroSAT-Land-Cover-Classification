@@ -12,9 +12,14 @@ const predictedClass = document.querySelector("#predicted-class");
 const predictedScore = document.querySelector("#predicted-score");
 const rankings = document.querySelector("#top-predictions");
 const backendStatus = document.querySelector("#backend-status");
+const exampleGrid = document.querySelector("#example-grid");
+const shuffleExamplesButton = document.querySelector("#shuffle-examples");
 
 let previewUrl;
 let backendRetryTimer;
+let selectedFile;
+let selectedExamplePath;
+let examplePool = [];
 
 function setBackendConnected() {
   if (backendRetryTimer) clearTimeout(backendRetryTimer);
@@ -45,25 +50,130 @@ function clearResults() {
   status.textContent = "";
 }
 
-input.addEventListener("change", () => {
-  clearResults();
+function formatClassName(className) {
+  return className.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
 
-  const file = input.files[0];
+function markSelectedExample() {
+  for (const card of exampleGrid.querySelectorAll(".example-card")) {
+    card.classList.toggle("selected", card.dataset.file === selectedExamplePath);
+  }
+}
+
+function selectFile(file, displayName, examplePath) {
+  clearResults();
+  selectedFile = file;
+  selectedExamplePath = examplePath;
   button.disabled = !file;
   previewWrapper.hidden = !file;
 
-  if (!file) return;
-
   if (previewUrl) URL.revokeObjectURL(previewUrl);
-  previewUrl = URL.createObjectURL(file);
-  preview.src = previewUrl;
-  fileName.textContent = file.name;
+  previewUrl = file ? URL.createObjectURL(file) : undefined;
+  preview.removeAttribute("src");
+
+  if (file) {
+    preview.src = previewUrl;
+    fileName.textContent = displayName;
+  } else {
+    fileName.textContent = "";
+  }
+
+  markSelectedExample();
+}
+
+input.addEventListener("change", () => {
+  const file = input.files[0];
+  if (file) selectFile(file, file.name);
 });
+
+async function selectExample(example) {
+  status.textContent = "Loading example…";
+
+  try {
+    const response = await fetch(example.file);
+    if (!response.ok) throw new Error();
+
+    const blob = await response.blob();
+    const filename = example.file.split("/").pop();
+    const file = new File([blob], filename, {
+      type: blob.type || "image/jpeg",
+    });
+
+    input.value = "";
+    selectFile(
+      file,
+      `${formatClassName(example.class_name)} example`,
+      example.file,
+    );
+  } catch {
+    status.textContent = "Could not load that example. Please try another.";
+  }
+}
+
+function randomExamplesByClass() {
+  const grouped = new Map();
+
+  for (const example of examplePool) {
+    if (!grouped.has(example.class_name)) grouped.set(example.class_name, []);
+    grouped.get(example.class_name).push(example);
+  }
+
+  return [...grouped.values()].map(
+    (examples) => examples[Math.floor(Math.random() * examples.length)],
+  );
+}
+
+function renderExamples() {
+  exampleGrid.replaceChildren();
+
+  for (const example of randomExamplesByClass()) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "example-card";
+    card.dataset.file = example.file;
+    card.setAttribute(
+      "aria-label",
+      `Use ${formatClassName(example.class_name)} example`,
+    );
+
+    const image = document.createElement("img");
+    image.src = example.file;
+    image.alt = "";
+    image.loading = "lazy";
+
+    const label = document.createElement("span");
+    label.textContent = formatClassName(example.class_name);
+
+    card.append(image, label);
+    card.addEventListener("click", () => selectExample(example));
+    exampleGrid.append(card);
+  }
+
+  markSelectedExample();
+}
+
+async function loadExamples() {
+  try {
+    const response = await fetch("examples/manifest.json");
+    if (!response.ok) throw new Error();
+
+    const manifest = await response.json();
+    examplePool = manifest.examples;
+    shuffleExamplesButton.disabled = false;
+    renderExamples();
+  } catch {
+    exampleGrid.innerHTML =
+      '<p class="examples-loading">Examples unavailable. Upload your own image instead.</p>';
+    shuffleExamplesButton.disabled = true;
+  }
+}
+
+shuffleExamplesButton.addEventListener("click", renderExamples);
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const file = input.files[0];
+  const file = selectedFile;
   if (!file) return;
 
   clearResults();
@@ -127,3 +237,4 @@ async function checkBackend() {
 }
 
 checkBackend();
+loadExamples();

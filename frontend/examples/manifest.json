@@ -1,0 +1,258 @@
+{
+  "source": "EuroSAT RGB",
+  "split": "test",
+  "selection_seed": 2026,
+  "examples_per_class": 5,
+  "examples": [
+    {
+      "class_name": "AnnualCrop",
+      "file": "examples/annual-crop-1.jpg",
+      "source_filename": "AnnualCrop_1143.jpg"
+    },
+    {
+      "class_name": "AnnualCrop",
+      "file": "examples/annual-crop-2.jpg",
+      "source_filename": "AnnualCrop_54.jpg"
+    },
+    {
+      "class_name": "AnnualCrop",
+      "file": "examples/annual-crop-3.jpg",
+      "source_filename": "AnnualCrop_2933.jpg"
+    },
+    {
+      "class_name": "AnnualCrop",
+      "file": "examples/annual-crop-4.jpg",
+      "source_filename": "AnnualCrop_538.jpg"
+    },
+    {
+      "class_name": "AnnualCrop",
+      "file": "examples/annual-crop-5.jpg",
+      "source_filename": "AnnualCrop_447.jpg"
+    },
+    {
+      "class_name": "Forest",
+      "file": "examples/forest-1.jpg",
+      "source_filename": "Forest_2149.jpg"
+    },
+    {
+      "class_name": "Forest",
+      "file": "examples/forest-2.jpg",
+      "source_filename": "Forest_2480.jpg"
+    },
+    {
+      "class_name": "Forest",
+      "file": "examples/forest-3.jpg",
+      "source_filename": "Forest_184.jpg"
+    },
+    {
+      "class_name": "Forest",
+      "file": "examples/forest-4.jpg",
+      "source_filename": "Forest_250.jpg"
+    },
+    {
+      "class_name": "Forest",
+      "file": "examples/forest-5.jpg",
+      "source_filename": "Forest_1954.jpg"
+    },
+    {
+      "class_name": "HerbaceousVegetation",
+      "file": "examples/herbaceous-vegetation-1.jpg",
+      "source_filename": "HerbaceousVegetation_1699.jpg"
+    },
+    {
+      "class_name": "HerbaceousVegetation",
+      "file": "examples/herbaceous-vegetation-2.jpg",
+      "source_filename": "HerbaceousVegetation_1566.jpg"
+    },
+    {
+      "class_name": "HerbaceousVegetation",
+      "file": "examples/herbaceous-vegetation-3.jpg",
+      "source_filename": "HerbaceousVegetation_52.jpg"
+    },
+    {
+      "class_name": "HerbaceousVegetation",
+      "file": "examples/herbaceous-vegetation-4.jpg",
+      "source_filename": "HerbaceousVegetation_1462.jpg"
+    },
+    {
+      "class_name": "HerbaceousVegetation",
+      "file": "examples/herbaceous-vegetation-5.jpg",
+      "source_filename": "HerbaceousVegetation_2626.jpg"
+    },
+    {
+      "class_name": "Highway",
+      "file": "examples/highway-1.jpg",
+      "source_filename": "Highway_884.jpg"
+    },
+    {
+      "class_name": "Highway",
+      "file": "examples/highway-2.jpg",
+      "source_filename": "Highway_936.jpg"
+    },
+    {
+      "class_name": "Highway",
+      "file": "examples/highway-3.jpg",
+      "source_filename": "Highway_1217.jpg"
+    },
+    {
+      "class_name": "Highway",
+      "file": "examples/highway-4.jpg",
+      "source_filename": "Highway_432.jpg"
+    },
+    {
+      "class_name": "Highway",
+      "file": "examples/highway-5.jpg",
+      "source_filename": "Highway_1003.jpg"
+    },
+    {
+      "class_name": "Industrial",
+      "file": "examples/industrial-1.jpg",
+      "source_filename": "Industrial_705.jpg"
+    },
+    {
+      "class_name": "Industrial",
+      "file": "examples/industrial-2.jpg",
+      "source_filename": "Industrial_2187.jpg"
+    },
+    {
+      "class_name": "Industrial",
+      "file": "examples/industrial-3.jpg",
+      "source_filename": "Industrial_619.jpg"
+    },
+    {
+      "class_name": "Industrial",
+      "file": "examples/industrial-4.jpg",
+      "source_filename": "Industrial_578.jpg"
+    },
+    {
+      "class_name": "Industrial",
+      "file": "examples/industrial-5.jpg",
+      "source_filename": "Industrial_1003.jpg"
+    },
+    {
+      "class_name": "Pasture",
+      "file": "examples/pasture-1.jpg",
+      "source_filename": "Pasture_1391.jpg"
+    },
+    {
+      "class_name": "Pasture",
+      "file": "examples/pasture-2.jpg",
+      "source_filename": "Pasture_510.jpg"
+    },
+    {
+      "class_name": "Pasture",
+      "file": "examples/pasture-3.jpg",
+      "source_filename": "Pasture_262.jpg"
+    },
+    {
+      "class_name": "Pasture",
+      "file": "examples/pasture-4.jpg",
+      "source_filename": "Pasture_620.jpg"
+    },
+    {
+      "class_name": "Pasture",
+      "file": "examples/pasture-5.jpg",
+      "source_filename": "Pasture_1454.jpg"
+    },
+    {
+      "class_name": "PermanentCrop",
+      "file": "examples/permanent-crop-1.jpg",
+      "source_filename": "PermanentCrop_657.jpg"
+    },
+    {
+      "class_name": "PermanentCrop",
+      "file": "examples/permanent-crop-2.jpg",
+      "source_filename": "PermanentCrop_2396.jpg"
+    },
+    {
+      "class_name": "PermanentCrop",
+      "file": "examples/permanent-crop-3.jpg",
+      "source_filename": "PermanentCrop_2145.jpg"
+    },
+    {
+      "class_name": "PermanentCrop",
+      "file": "examples/permanent-crop-4.jpg",
+      "source_filename": "PermanentCrop_2272.jpg"
+    },
+    {
+      "class_name": "PermanentCrop",
+      "file": "examples/permanent-crop-5.jpg",
+      "source_filename": "PermanentCrop_2254.jpg"
+    },
+    {
+      "class_name": "Residential",
+      "file": "examples/residential-1.jpg",
+      "source_filename": "Residential_2511.jpg"
+    },
+    {
+      "class_name": "Residential",
+      "file": "examples/residential-2.jpg",
+      "source_filename": "Residential_2595.jpg"
+    },
+    {
+      "class_name": "Residential",
+      "file": "examples/residential-3.jpg",
+      "source_filename": "Residential_1914.jpg"
+    },
+    {
+      "class_name": "Residential",
+      "file": "examples/residential-4.jpg",
+      "source_filename": "Residential_1456.jpg"
+    },
+    {
+      "class_name": "Residential",
+      "file": "examples/residential-5.jpg",
+      "source_filename": "Residential_2237.jpg"
+    },
+    {
+      "class_name": "River",
+      "file": "examples/river-1.jpg",
+      "source_filename": "River_1786.jpg"
+    },
+    {
+      "class_name": "River",
+      "file": "examples/river-2.jpg",
+      "source_filename": "River_133.jpg"
+    },
+    {
+      "class_name": "River",
+      "file": "examples/river-3.jpg",
+      "source_filename": "River_463.jpg"
+    },
+    {
+      "class_name": "River",
+      "file": "examples/river-4.jpg",
+      "source_filename": "River_44.jpg"
+    },
+    {
+      "class_name": "River",
+      "file": "examples/river-5.jpg",
+      "source_filename": "River_511.jpg"
+    },
+    {
+      "class_name": "SeaLake",
+      "file": "examples/sea-lake-1.jpg",
+      "source_filename": "SeaLake_1689.jpg"
+    },
+    {
+      "class_name": "SeaLake",
+      "file": "examples/sea-lake-2.jpg",
+      "source_filename": "SeaLake_2058.jpg"
+    },
+    {
+      "class_name": "SeaLake",
+      "file": "examples/sea-lake-3.jpg",
+      "source_filename": "SeaLake_2995.jpg"
+    },
+    {
+      "class_name": "SeaLake",
+      "file": "examples/sea-lake-4.jpg",
+      "source_filename": "SeaLake_892.jpg"
+    },
+    {
+      "class_name": "SeaLake",
+      "file": "examples/sea-lake-5.jpg",
+      "source_filename": "SeaLake_499.jpg"
+    }
+  ]
+}

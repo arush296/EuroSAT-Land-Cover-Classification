@@ -105,6 +105,99 @@ h1 {
   color: #738078;
 }
 
+.examples {
+  margin-top: 22px;
+}
+
+.examples-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.examples-header p {
+  margin: 0;
+  color: #738078;
+  font-size: 0.78rem;
+}
+
+.examples-header .examples-title {
+  margin-bottom: 3px;
+  color: #27342c;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+#shuffle-examples {
+  width: auto;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 7px 10px;
+  border: 1px solid #cbd6ce;
+  color: #3d5e49;
+  background: #ffffff;
+  font-size: 0.76rem;
+}
+
+#shuffle-examples:hover:not(:disabled) {
+  background: #f2f7f3;
+}
+
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.example-card {
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 4px 7px;
+  overflow: hidden;
+  border: 1px solid #dce4de;
+  border-radius: 9px;
+  color: #33463a;
+  background: #f8faf8;
+  font-size: 0.67rem;
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.example-card:hover:not(:disabled) {
+  border-color: #73917d;
+  background: #f2f7f3;
+}
+
+.example-card.selected {
+  border-color: #28533a;
+  box-shadow: 0 0 0 2px rgba(40, 83, 58, 0.14);
+}
+
+.example-card img {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  border-radius: 5px;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.example-card span {
+  display: block;
+  min-height: 2.3em;
+  overflow-wrap: anywhere;
+}
+
+.examples-loading {
+  grid-column: 1 / -1;
+  margin: 4px 0;
+  color: #738078;
+  font-size: 0.82rem;
+}
+
 .preview {
   display: grid;
   grid-template-columns: 88px 1fr;
@@ -217,6 +310,17 @@ button:disabled {
   color: #3f704f;
 }
 
+.attribution {
+  margin: 8px 0 0;
+  color: #7b857f;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.attribution a {
+  color: inherit;
+}
+
 @media (max-width: 520px) {
   .page {
     padding-top: 38px;
@@ -224,5 +328,9 @@ button:disabled {
 
   .card {
     padding: 18px;
+  }
+
+  .example-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
