@@ -1,10 +1,12 @@
-"""Inference utilities for the exported EuroSAT ResNet18 ONNX model."""
+"""Inference utilities for the exported EuroSAT ONNX models."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import shutil
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +16,10 @@ from PIL import Image
 
 
 PROJECT_DIR = Path(__file__).resolve().parent
-DEFAULT_CHECKPOINT = PROJECT_DIR / "resnet18_eurosat.onnx"
+DEFAULT_RESNET_CHECKPOINT = PROJECT_DIR / "resnet18_eurosat.onnx"
+DEFAULT_CUSTOM_CNN_CHECKPOINT = PROJECT_DIR / "custom_cnn_eurosat.onnx"
+# Backward-compatible name for callers that use the ResNet-only pipeline.
+DEFAULT_CHECKPOINT = DEFAULT_RESNET_CHECKPOINT
 
 CLASS_NAMES = (
     "AnnualCrop",
@@ -37,9 +42,22 @@ INPUT_SIZE = (64, 64)
 def load_model(
     checkpoint_path: str | Path = DEFAULT_CHECKPOINT,
     device: str = "cpu",
+    download_url: str | None = None,
 ) -> ort.InferenceSession:
     """Load the ONNX model with memory-conscious CPU settings."""
     checkpoint_path = Path(checkpoint_path)
+    if not checkpoint_path.exists() and download_url:
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = checkpoint_path.with_suffix(checkpoint_path.suffix + ".download")
+        request = urllib.request.Request(
+            download_url,
+            headers={"User-Agent": "EuroSAT-Classifier/2.0"},
+        )
+        with urllib.request.urlopen(request, timeout=60) as response:
+            with temporary_path.open("wb") as destination:
+                shutil.copyfileobj(response, destination)
+        temporary_path.replace(checkpoint_path)
+
     if not checkpoint_path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
     if device != "cpu":
@@ -69,11 +87,20 @@ def preprocess_image(image: Image.Image) -> np.ndarray:
     return np.ascontiguousarray(batch, dtype=np.float32)
 
 
+def preprocess_custom_cnn_image(image: Image.Image) -> np.ndarray:
+    """Convert one image to the unnormalized [0, 1] input used by CustomCNN."""
+    image = image.convert("RGB").resize(INPUT_SIZE, Image.Resampling.BILINEAR)
+    pixels = np.asarray(image, dtype=np.float32) / 255.0
+    batch = np.transpose(pixels, (2, 0, 1))[None, ...]
+    return np.ascontiguousarray(batch, dtype=np.float32)
+
+
 def predict_image(
     image: Image.Image | str | Path,
     model: ort.InferenceSession,
     device: str = "cpu",
     top_k: int = 3,
+    normalize: bool = True,
 ) -> dict[str, Any]:
     """Predict a EuroSAT class and return the top scoring classes."""
     if not 1 <= top_k <= len(CLASS_NAMES):
@@ -83,9 +110,17 @@ def predict_image(
 
     if isinstance(image, (str, Path)):
         with Image.open(image) as opened_image:
-            batch = preprocess_image(opened_image)
+            batch = (
+                preprocess_image(opened_image)
+                if normalize
+                else preprocess_custom_cnn_image(opened_image)
+            )
     else:
-        batch = preprocess_image(image)
+        batch = (
+            preprocess_image(image)
+            if normalize
+            else preprocess_custom_cnn_image(image)
+        )
 
     input_name = model.get_inputs()[0].name
     logits = np.asarray(model.run(None, {input_name: batch})[0])[0]
@@ -119,6 +154,11 @@ def main() -> None:
     )
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument(
+        "--preprocessing",
+        choices=("resnet18", "custom_cnn"),
+        default="resnet18",
+    )
     args = parser.parse_args()
 
     model = load_model(args.checkpoint, args.device)
@@ -127,6 +167,7 @@ def main() -> None:
         model,
         device=args.device,
         top_k=args.top_k,
+        normalize=args.preprocessing == "resnet18",
     )
     print(json.dumps(prediction, indent=2))
 

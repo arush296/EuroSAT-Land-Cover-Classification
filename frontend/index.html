@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Classify EuroSAT satellite images with a fine-tuned ResNet18 model."
+      content="Compare CustomCNN and ResNet18 predictions on EuroSAT satellite images."
     />
     <title>EuroSAT Classifier</title>
     <link rel="stylesheet" href="styles.css" />
@@ -38,7 +38,7 @@
                 <p>
                   These images come from the held-out test set and were never
                   used to train the model. Their labels show the true class;
-                  the model predicts only after you click Classify image.
+                  the models predict only after you click Compare models.
                 </p>
               </div>
               <button id="shuffle-examples" type="button" disabled>
@@ -56,27 +56,59 @@
           </div>
 
           <button id="predict-button" type="submit" disabled>
-            Classify image
+            Compare models
           </button>
         </form>
 
         <p id="status" class="status" role="status" aria-live="polite"></p>
         </div>
 
-        <aside class="prediction-panel" aria-label="Model prediction">
-        <section id="results" class="results" aria-live="polite" hidden>
-          <p class="result-label">Prediction</p>
-          <div class="primary-result">
-            <h2 id="predicted-class"></h2>
-            <span id="predicted-score"></span>
-          </div>
-          <div id="top-predictions" class="rankings"></div>
-        </section>
+        <aside class="prediction-panel" aria-label="Model comparison">
+          <section id="results" class="results" aria-live="polite" hidden>
+            <p class="result-label">Model comparison</p>
+            <p id="known-label" class="known-label" hidden></p>
+
+            <div class="model-results-grid">
+              <article class="model-result">
+                <div class="model-result-header">
+                  <h2>Custom CNN</h2>
+                  <span id="custom-cnn-badge" class="result-badge" hidden></span>
+                </div>
+                <p class="model-description">Trained from scratch</p>
+                <div class="primary-result">
+                  <h3 id="custom-cnn-class"></h3>
+                  <span id="custom-cnn-score"></span>
+                </div>
+                <div id="custom-cnn-predictions" class="rankings"></div>
+                <div class="model-facts">
+                  <p>Test accuracy <strong>92.04%</strong></p>
+                  <p>Augmented EuroSAT training data</p>
+                </div>
+              </article>
+
+              <article class="model-result">
+                <div class="model-result-header">
+                  <h2>ResNet18</h2>
+                  <span id="resnet18-badge" class="result-badge" hidden></span>
+                </div>
+                <p class="model-description">ImageNet pretrained and fine-tuned</p>
+                <div class="primary-result">
+                  <h3 id="resnet18-class"></h3>
+                  <span id="resnet18-score"></span>
+                </div>
+                <div id="resnet18-predictions" class="rankings"></div>
+                <div class="model-facts">
+                  <p>Test accuracy <strong>96.93%</strong></p>
+                  <p>All ResNet18 layers fine-tuned</p>
+                </div>
+              </article>
+            </div>
+          </section>
           <div class="result-placeholder">
-            <p class="result-label">Prediction</p>
+            <p class="result-label">Compare models</p>
             <p>
-              Select an image and click <strong>Classify image</strong> to see
-              the model's prediction here.
+              Select an image and click <strong>Compare models</strong> to see
+              CustomCNN and ResNet18 side by side.
             </p>
           </div>
         </aside>

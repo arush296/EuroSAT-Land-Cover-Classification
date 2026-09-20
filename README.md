@@ -1,6 +1,6 @@
 # EuroSAT Land-Cover Classification
 
-An end-to-end image-classification project for identifying land-cover types in EuroSAT satellite imagery. The project compares a custom convolutional neural network with a fully fine-tuned ResNet18, exposes the selected model through FastAPI, and provides a small browser frontend.
+An end-to-end image-classification project for identifying land-cover types in EuroSAT satellite imagery. The project compares a custom convolutional neural network with a fully fine-tuned ResNet18, exposes both models through FastAPI, and displays their predictions side by side in a small browser frontend.
 
 [Live demo](https://eurosat-classifier.vercel.app) · [API health](https://eurosat-api.onrender.com/health) · [Interactive API documentation](https://eurosat-api.onrender.com/docs)
 
@@ -15,7 +15,7 @@ Both models use the same saved train, validation, and test indices so their resu
 
 These values were reproduced directly from the saved checkpoints on the fixed test split.
 
-The selected ResNet18 model is exported to ONNX for deployment. Its ONNX and PyTorch outputs were checked locally and produced the same predicted class with a maximum score difference of approximately `2.6e-9` on the verification image.
+Both models are exported to ONNX for lightweight deployment. Their ONNX and PyTorch outputs were checked locally before deployment.
 
 ## Dataset and preprocessing
 
@@ -42,7 +42,8 @@ Training images receive random horizontal flips, vertical flips, and rotations. 
 │   ├── resnet18.ipynb         # ResNet18 fine-tuning and evaluation
 │   └── data_preprocessing.ipynb
 ├── scripts/
-│   ├── export_onnx.py         # Exports the trained PyTorch model to ONNX
+│   ├── export_onnx.py         # Exports ResNet18 to ONNX
+│   ├── export_custom_cnn_onnx.py # Exports CustomCNN to ONNX
 │   └── prepare_demo_images.py # Builds the held-out frontend sample pool
 ├── inference.py               # Lightweight ONNX preprocessing and inference
 ├── main.py                    # FastAPI application
@@ -54,7 +55,7 @@ Training images receive random horizontal flips, vertical flips, and rotations. 
 └── requirements-dev.txt       # Test dependencies
 ```
 
-The dataset and trained model files are intentionally excluded from Git. The deployment model is available as an asset on the [`model-v1` GitHub release](https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/tag/model-v1).
+The dataset and trained model files are intentionally excluded from Git. Both deployment models are available as assets on the [`model-v1` GitHub release](https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/tag/model-v1).
 
 ## Local setup
 
@@ -91,12 +92,15 @@ The two model notebooks call `notebooks/data_preprocessing.ipynb` themselves, so
 
 ## Run the API locally
 
-Download the ONNX model from the GitHub release:
+Download both ONNX models from the GitHub release:
 
 ```bash
 curl -L --fail \
   "https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/download/model-v1/resnet18_eurosat.onnx" \
   -o resnet18_eurosat.onnx
+curl -L --fail \
+  "https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/download/model-v1/custom_cnn_eurosat.onnx" \
+  -o custom_cnn_eurosat.onnx
 ```
 
 Start FastAPI:
@@ -111,12 +115,12 @@ Then open:
 - Health check: <http://127.0.0.1:8000/health>
 - Model information: <http://127.0.0.1:8000/model-info>
 
-Example prediction request:
+Example model-comparison request:
 
 ```bash
 curl -X POST \
   -F "file=@path/to/satellite-image.jpg" \
-  "http://127.0.0.1:8000/predict?top_k=3"
+  "http://127.0.0.1:8000/compare?top_k=3"
 ```
 
 Example response:
@@ -124,13 +128,22 @@ Example response:
 ```json
 {
   "filename": "satellite-image.jpg",
-  "predicted_class": "Pasture",
-  "score": 0.9999,
-  "top_predictions": [
-    {"class_name": "Pasture", "score": 0.9999},
-    {"class_name": "PermanentCrop", "score": 0.0001},
-    {"class_name": "Industrial", "score": 0.0}
-  ]
+  "custom_cnn": {
+    "model_name": "Custom CNN",
+    "predicted_class": "Pasture",
+    "score": 0.93,
+    "top_predictions": [],
+    "test_accuracy": 0.9204,
+    "training_method": "Trained from scratch with augmentation"
+  },
+  "resnet18": {
+    "model_name": "ResNet18",
+    "predicted_class": "PermanentCrop",
+    "score": 0.97,
+    "top_predictions": [],
+    "test_accuracy": 0.9693,
+    "training_method": "ImageNet pretrained and fully fine-tuned"
+  }
 }
 ```
 
@@ -138,9 +151,10 @@ Example response:
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/health` | Reports whether the API and model are ready |
-| `GET` | `/model-info` | Returns the architecture, input size and classes |
-| `POST` | `/predict?top_k=3` | Validates an uploaded image and returns ranked predictions |
+| `GET` | `/health` | Reports whether both models are ready |
+| `GET` | `/model-info` | Returns both models, preprocessing, input size and classes |
+| `POST` | `/compare?top_k=3` | Returns CustomCNN and ResNet18 predictions for one image |
+| `POST` | `/predict?top_k=3` | Backward-compatible ResNet18-only prediction |
 
 Uploads are limited to 10 MB and 25 million pixels. JPEG, PNG, WebP, TIFF, and BMP images are supported.
 
@@ -152,7 +166,7 @@ Keep the API running, then open a second terminal:
 python -m http.server 3000 --directory frontend
 ```
 
-Open <http://127.0.0.1:3000>. The frontend previews the chosen image, calls the FastAPI backend, and displays the top three class probabilities. It also retries the health check while a sleeping Render service wakes up.
+Open <http://127.0.0.1:3000>. The frontend previews the chosen image, calls the FastAPI backend, and displays CustomCNN and ResNet18 predictions side by side with their top-three probabilities. Bundled test examples also receive Correct/Incorrect badges because their true labels are known. User uploads do not receive correctness claims. The frontend retries the health check while a sleeping Render service wakes up.
 
 Visitors without their own satellite image can select from ten examples shown on the page. The examples are randomly chosen on each page load—one per class—from a bundled pool of 50 held-out test images. The **Shuffle** button produces another class-balanced set.
 
@@ -171,17 +185,18 @@ pip install -r requirements-dev.txt
 python -m pytest tests/test_api.py -q
 ```
 
-The tests use a deterministic fake inference session, so the API contract and validation behavior can be tested without loading the real 43 MB model.
+The tests use deterministic fake inference sessions, so the API contracts and validation behavior can be tested without loading either real model.
 
 ## Export a new ONNX model
 
-After retraining and saving `resnet_fully_fine_tuned.pth`, run:
+After retraining, export both checkpoints:
 
 ```bash
 python scripts/export_onnx.py
+python scripts/export_custom_cnn_onnx.py
 ```
 
-This creates `resnet18_eurosat.onnx`. Both formats are ignored by Git; publish deployment models as release assets instead of committing them to the repository.
+These commands create `resnet18_eurosat.onnx` and `custom_cnn_eurosat.onnx`. Model files are ignored by Git; publish them as release assets instead of committing them to the repository.
 
 ## Deployment
 
@@ -189,10 +204,12 @@ This creates `resnet18_eurosat.onnx`. Both formats are ignored by Git; publish d
 
 The production service uses only `requirements-api.txt`, avoiding the memory cost of importing PyTorch on Render's free tier.
 
+If `custom_cnn_eurosat.onnx` is absent after the build, the API downloads the 8.4 MB release asset once during startup. This keeps the existing ResNet-only Render build command compatible; downloading both files during the build is still preferred.
+
 Build command:
 
 ```bash
-pip install -r requirements-api.txt && curl -L --fail "https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/download/model-v1/resnet18_eurosat.onnx" -o resnet18_eurosat.onnx
+pip install -r requirements-api.txt && curl -L --fail "https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/download/model-v1/resnet18_eurosat.onnx" -o resnet18_eurosat.onnx && curl -L --fail "https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/download/model-v1/custom_cnn_eurosat.onnx" -o custom_cnn_eurosat.onnx
 ```
 
 Start command:
@@ -204,7 +221,9 @@ uvicorn main:app --host 0.0.0.0 --port $PORT
 Relevant environment variables:
 
 ```text
-EUROSAT_CHECKPOINT=resnet18_eurosat.onnx
+EUROSAT_RESNET_CHECKPOINT=resnet18_eurosat.onnx
+EUROSAT_CUSTOM_CNN_CHECKPOINT=custom_cnn_eurosat.onnx
+EUROSAT_CUSTOM_CNN_MODEL_URL=https://github.com/arush296/EuroSAT-Land-Cover-Classification/releases/download/model-v1/custom_cnn_eurosat.onnx
 EUROSAT_DEVICE=cpu
 ORT_INTRA_OP_THREADS=1
 WEB_CONCURRENCY=1

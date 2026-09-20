@@ -13,7 +13,10 @@ class FakeInput:
 
 
 class FakeModel:
-    """Small deterministic ONNX-session stand-in for the trained ResNet18."""
+    """Small deterministic ONNX-session stand-in for either trained model."""
+
+    def __init__(self, predicted_class_index: int):
+        self.predicted_class_index = predicted_class_index
 
     def get_inputs(self):
         return [FakeInput()]
@@ -21,7 +24,7 @@ class FakeModel:
     def run(self, output_names, inputs):
         images = inputs["images"]
         logits = np.zeros((images.shape[0], len(main.CLASS_NAMES)), dtype=np.float32)
-        logits[:, 1] = 10  # Always predict Forest.
+        logits[:, self.predicted_class_index] = 10
         return [logits]
 
 
@@ -31,7 +34,9 @@ def client(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
         main,
         "load_model",
-        lambda *args, **kwargs: FakeModel(),
+        lambda checkpoint, *args, **kwargs: FakeModel(
+            0 if "custom_cnn" in str(checkpoint) else 1
+        ),
     )
 
     with TestClient(main.app) as test_client:
@@ -51,6 +56,10 @@ def test_health(client: TestClient):
     assert response.json() == {
         "status": "ok",
         "model_loaded": True,
+        "models_loaded": {
+            "custom_cnn": True,
+            "resnet18": True,
+        },
     }
 
 
@@ -59,14 +68,20 @@ def test_model_info(client: TestClient):
     body = response.json()
 
     assert response.status_code == 200
-    assert body["model"] == "resnet18"
     assert body["input_size"] == [64, 64]
     assert body["classes"] == list(main.CLASS_NAMES)
+    assert set(body["models"]) == {"custom_cnn", "resnet18"}
+    assert body["models"]["custom_cnn"]["test_accuracy"] == pytest.approx(
+        2485 / 2700
+    )
+    assert body["models"]["resnet18"]["test_accuracy"] == pytest.approx(
+        2617 / 2700
+    )
 
 
 def test_cors_allows_local_frontend(client: TestClient):
     response = client.options(
-        "/predict",
+        "/compare",
         headers={
             "Origin": "http://localhost:3000",
             "Access-Control-Request-Method": "POST",
@@ -105,6 +120,23 @@ def test_top_k_controls_number_of_predictions(client: TestClient):
 
     assert response.status_code == 200
     assert len(response.json()["top_predictions"]) == 1
+
+
+def test_compare_runs_both_models(client: TestClient):
+    response = client.post(
+        "/compare?top_k=3",
+        files={"file": ("satellite.png", create_test_image(), "image/png")},
+    )
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["filename"] == "satellite.png"
+    assert body["custom_cnn"]["model_name"] == "Custom CNN"
+    assert body["custom_cnn"]["predicted_class"] == "AnnualCrop"
+    assert body["resnet18"]["model_name"] == "ResNet18"
+    assert body["resnet18"]["predicted_class"] == "Forest"
+    assert len(body["custom_cnn"]["top_predictions"]) == 3
+    assert len(body["resnet18"]["top_predictions"]) == 3
 
 
 @pytest.mark.parametrize("top_k", [0, 11])

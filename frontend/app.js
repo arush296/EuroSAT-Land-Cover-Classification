@@ -8,17 +8,31 @@ const preview = document.querySelector("#image-preview");
 const fileName = document.querySelector("#file-name");
 const status = document.querySelector("#status");
 const results = document.querySelector("#results");
-const predictedClass = document.querySelector("#predicted-class");
-const predictedScore = document.querySelector("#predicted-score");
-const rankings = document.querySelector("#top-predictions");
+const knownLabel = document.querySelector("#known-label");
 const backendStatus = document.querySelector("#backend-status");
 const exampleGrid = document.querySelector("#example-grid");
 const shuffleExamplesButton = document.querySelector("#shuffle-examples");
+
+const modelFields = {
+  custom_cnn: {
+    predictedClass: document.querySelector("#custom-cnn-class"),
+    predictedScore: document.querySelector("#custom-cnn-score"),
+    rankings: document.querySelector("#custom-cnn-predictions"),
+    badge: document.querySelector("#custom-cnn-badge"),
+  },
+  resnet18: {
+    predictedClass: document.querySelector("#resnet18-class"),
+    predictedScore: document.querySelector("#resnet18-score"),
+    rankings: document.querySelector("#resnet18-predictions"),
+    badge: document.querySelector("#resnet18-badge"),
+  },
+};
 
 let previewUrl;
 let backendRetryTimer;
 let selectedFile;
 let selectedExamplePath;
+let selectedExampleClass;
 let examplePool = [];
 
 function setBackendConnected() {
@@ -46,7 +60,12 @@ function percentage(score) {
 
 function clearResults() {
   results.hidden = true;
-  rankings.replaceChildren();
+  knownLabel.hidden = true;
+  for (const fields of Object.values(modelFields)) {
+    fields.rankings.replaceChildren();
+    fields.badge.hidden = true;
+    fields.badge.classList.remove("correct", "incorrect");
+  }
   status.textContent = "";
 }
 
@@ -60,10 +79,11 @@ function markSelectedExample() {
   }
 }
 
-function selectFile(file, displayName, examplePath) {
+function selectFile(file, displayName, examplePath, exampleClass) {
   clearResults();
   selectedFile = file;
   selectedExamplePath = examplePath;
+  selectedExampleClass = exampleClass;
   button.disabled = !file;
   previewWrapper.hidden = !file;
 
@@ -104,6 +124,7 @@ async function selectExample(example) {
       file,
       `${formatClassName(example.class_name)} example`,
       example.file,
+      example.class_name,
     );
   } catch {
     status.textContent = "Could not load that example. Please try another.";
@@ -170,6 +191,34 @@ async function loadExamples() {
 
 shuffleExamplesButton.addEventListener("click", renderExamples);
 
+function renderModelResult(modelKey, prediction) {
+  const fields = modelFields[modelKey];
+  fields.predictedClass.textContent = formatClassName(
+    prediction.predicted_class,
+  );
+  fields.predictedScore.textContent = percentage(prediction.score);
+
+  for (const item of prediction.top_predictions) {
+    const row = document.createElement("div");
+    row.className = "ranking-row";
+    row.innerHTML = `
+      <span>${formatClassName(item.class_name)}</span>
+      <strong>${percentage(item.score)}</strong>
+      <div class="ranking-bar" aria-hidden="true">
+        <span style="width: ${item.score * 100}%"></span>
+      </div>
+    `;
+    fields.rankings.append(row);
+  }
+
+  if (selectedExampleClass) {
+    const isCorrect = prediction.predicted_class === selectedExampleClass;
+    fields.badge.textContent = isCorrect ? "Correct" : "Incorrect";
+    fields.badge.classList.add(isCorrect ? "correct" : "incorrect");
+    fields.badge.hidden = false;
+  }
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -178,7 +227,7 @@ form.addEventListener("submit", async (event) => {
 
   clearResults();
   button.disabled = true;
-  button.textContent = "Classifying…";
+  button.textContent = "Comparing…";
   status.textContent = "Uploading image…";
 
   const formData = new FormData();
@@ -186,7 +235,7 @@ form.addEventListener("submit", async (event) => {
   let backendReached = false;
 
   try {
-    const response = await fetch(`${API_URL}/predict?top_k=3`, {
+    const response = await fetch(`${API_URL}/compare?top_k=3`, {
       method: "POST",
       body: formData,
     });
@@ -198,20 +247,12 @@ form.addEventListener("submit", async (event) => {
       throw new Error(body.detail || "Prediction failed.");
     }
 
-    predictedClass.textContent = formatClassName(body.predicted_class);
-    predictedScore.textContent = percentage(body.score);
+    renderModelResult("custom_cnn", body.custom_cnn);
+    renderModelResult("resnet18", body.resnet18);
 
-    for (const prediction of body.top_predictions) {
-      const row = document.createElement("div");
-      row.className = "ranking-row";
-      row.innerHTML = `
-        <span>${formatClassName(prediction.class_name)}</span>
-        <strong>${percentage(prediction.score)}</strong>
-        <div class="ranking-bar" aria-hidden="true">
-          <span style="width: ${prediction.score * 100}%"></span>
-        </div>
-      `;
-      rankings.append(row);
+    if (selectedExampleClass) {
+      knownLabel.textContent = `Known test label: ${formatClassName(selectedExampleClass)}`;
+      knownLabel.hidden = false;
     }
 
     status.textContent = "";
@@ -221,7 +262,7 @@ form.addEventListener("submit", async (event) => {
     if (!backendReached) setBackendUnavailable();
   } finally {
     button.disabled = false;
-    button.textContent = "Classify image";
+    button.textContent = "Compare models";
   }
 });
 
